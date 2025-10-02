@@ -28,22 +28,49 @@ if ( $is_local && file_exists( __DIR__ . '/dist/fast-refresh.php' ) ) {
 }
 
 // Require Composer autoloader if it exists.
-if ( ! file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
-	throw new Exception( 'Please run `composer install` in your theme directory.' );
+if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+	require_once __DIR__ . '/vendor/autoload.php';
+
+	require_once __DIR__ . '/template-tags.php';
+
+	$theme_core = new \TenUpTheme\ThemeCore();
+	$theme_core->setup();
+
+	// Initialize WooCommerce Memberships integration
+	add_action( 'init', function() {
+		new \TenUpTheme\WooCommerceMemberships();
+		new \TenUpTheme\WooCommerceMembershipsStyles();
+		new \TenUpTheme\WooCommerceMembershipsScripts();
+		new \TenUpTheme\SecurePDFViewer();
+		new \TenUpTheme\SecurePDFEndpoint();
+	}, 20 );
+} else {
+	// Basic autoloader for theme classes when vendor is not available
+	spl_autoload_register( function ( $class ) {
+		$namespace = 'TenUpTheme\\';
+
+		if ( strpos( $class, $namespace ) !== 0 ) {
+			return;
+		}
+
+		$class = str_replace( $namespace, '', $class );
+		$class = str_replace( '\\', DIRECTORY_SEPARATOR, $class );
+		$file = __DIR__ . '/src/' . $class . '.php';
+
+		if ( file_exists( $file ) ) {
+			require_once $file;
+		}
+	});
+
+	require_once __DIR__ . '/template-tags.php';
 }
 
-require_once __DIR__ . '/vendor/autoload.php';
+// Initialize Admin Menu Customizer independently of vendor autoloader
+require_once __DIR__ . '/src/AdminMenuCustomizer.php';
+$admin_menu_customizer = new \TenUpTheme\AdminMenuCustomizer();
+$admin_menu_customizer->init();
 
-require_once __DIR__ . '/template-tags.php';
-
-$theme_core = new \TenUpTheme\ThemeCore();
-$theme_core->setup();
-
-// Initialize WooCommerce Memberships integration
-add_action( 'init', function() {
-	new \TenUpTheme\WooCommerceMemberships();
-	new \TenUpTheme\WooCommerceMembershipsStyles();
-	new \TenUpTheme\WooCommerceMembershipsScripts();
-	new \TenUpTheme\SecurePDFViewer();
-	new \TenUpTheme\SecurePDFEndpoint();
-}, 20 );
+// Initialize Disable Comments independently of vendor autoloader
+require_once __DIR__ . '/src/DisableComments.php';
+$disable_comments = new \TenUpTheme\DisableComments();
+$disable_comments->init();
