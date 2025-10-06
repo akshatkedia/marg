@@ -74,3 +74,13 @@ $admin_menu_customizer->init();
 require_once __DIR__ . '/src/DisableComments.php';
 $disable_comments = new \TenUpTheme\DisableComments();
 $disable_comments->init();
+
+// Initialize Disable Product Reviews independently of vendor autoloader
+require_once __DIR__ . '/src/DisableProductReviews.php';
+$disable_product_reviews = new \TenUpTheme\DisableProductReviews();
+$disable_product_reviews->init();
+
+// Initialize Dashboard Documentation independently of vendor autoloader
+require_once __DIR__ . '/src/DashboardDocumentation.php';
+$dashboard_documentation = new \TenUpTheme\DashboardDocumentation();
+$dashboard_documentation->init();
