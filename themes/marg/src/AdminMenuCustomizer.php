@@ -917,9 +917,15 @@ class AdminMenuCustomizer {
 			}
 		}
 
-		// Add our ordered items
+		// Add our ordered items (Dashboard, Pages, People, Posts, Products, Orders, Events)
+		if ( $pages_item ) {
+			$new_menu[$pos++] = $pages_item;
+		}
 		if ( $people_item ) {
 			$new_menu[$pos++] = $people_item;
+		}
+		if ( $posts_item ) {
+			$new_menu[$pos++] = $posts_item;
 		}
 		if ( $products_item ) {
 			$new_menu[$pos++] = $products_item;
@@ -929,12 +935,6 @@ class AdminMenuCustomizer {
 		}
 		if ( $events_item ) {
 			$new_menu[$pos++] = $events_item;
-		}
-		if ( $posts_item ) {
-			$new_menu[$pos++] = $posts_item;
-		}
-		if ( $pages_item ) {
-			$new_menu[$pos++] = $pages_item;
 		}
 
 		// Add remaining items after position 5
@@ -1075,6 +1075,8 @@ class AdminMenuCustomizer {
 		echo '<style>
 			/* Hide separator between Events and Media */
 			#menu-posts-event + .wp-menu-separator,
+			/* Hide separator between Pages and People */
+			#menu-pages + .wp-menu-separator,
 			/* Hide separator between Media and Taxonomies */
 			#menu-media + .wp-menu-separator {
 				display: none !important;
@@ -1106,30 +1108,29 @@ class AdminMenuCustomizer {
 				order: 10 !important;
 			}
 
-			/* Post types in desired order */
-			#toplevel_page_edit-post_type-person {
+			/* Post types in desired order: Dashboard, Pages, People, Posts, Products, Orders, Events */
+			#menu-pages {
 				order: 20 !important;
 			}
 
-			#menu-posts-product {
+			#menu-posts-person {
 				order: 30 !important;
 			}
 
-			/* Orders right after Products - using whole number */
-			#toplevel_page_wc-orders {
-				order: 35 !important;
-			}
-
-			#menu-posts-event {
+			#menu-posts {
 				order: 40 !important;
 			}
 
-			#menu-posts {
+			#menu-posts-product {
 				order: 50 !important;
 			}
 
-			#menu-pages {
+			#toplevel_page_wc-orders {
 				order: 60 !important;
+			}
+
+			#menu-posts-event {
+				order: 70 !important;
 			}
 
 			/* Media after post types */
@@ -1162,12 +1163,33 @@ class AdminMenuCustomizer {
 		</style>
 		<script>
 		jQuery(document).ready(function($) {
-			// Backup: Physically move Orders menu after Products in DOM
-			var ordersMenu = $("#toplevel_page_wc-orders");
-			var productsMenu = $("#menu-posts-product");
+			// Backup: Physically reorder menu items in DOM
+			// Order: Dashboard, Pages, People, Posts, Products, Orders, Events
+			var dashboard = $("#menu-dashboard");
+			var pages = $("#menu-pages");
+			var people = $("#menu-posts-person");
+			var posts = $("#menu-posts");
+			var products = $("#menu-posts-product");
+			var orders = $("#toplevel_page_wc-orders");
+			var events = $("#menu-posts-event");
 
-			if (ordersMenu.length && productsMenu.length) {
-				ordersMenu.insertAfter(productsMenu);
+			if (dashboard.length && pages.length) {
+				pages.insertAfter(dashboard);
+			}
+			if (pages.length && people.length) {
+				people.insertAfter(pages);
+			}
+			if (people.length && posts.length) {
+				posts.insertAfter(people);
+			}
+			if (posts.length && products.length) {
+				products.insertAfter(posts);
+			}
+			if (products.length && orders.length) {
+				orders.insertAfter(products);
+			}
+			if (orders.length && events.length) {
+				events.insertAfter(orders);
 			}
 		});
 		</script>';

@@ -1,0 +1,107 @@
+{
+    "key": "group_685162e07c27b",
+    "title": "Article Details",
+    "fields": [
+        {
+            "key": "field_685162f41fcaf",
+            "label": "Page Range",
+            "name": "page_number",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Enter the page range in plain text, following the format used in the old system (e.g., pp. 112–125). Use a single page number if the content is only on one page (e.g., p. 45).",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_6851635e1fcb3",
+            "label": "Parent Publication",
+            "name": "parent_publication",
+            "aria-label": "",
+            "type": "relationship",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "post_type": [
+                "product"
+            ],
+            "post_status": "",
+            "taxonomy": [
+                "product_cat:magazine"
+            ],
+            "filters": [
+                "search"
+            ],
+            "return_format": "object",
+            "min": "",
+            "max": "",
+            "allow_in_bindings": 0,
+            "elements": "",
+            "bidirectional": 0,
+            "bidirectional_target": []
+        },
+        {
+            "key": "field_68a6b1c061cfc",
+            "label": "Editors",
+            "name": "editors",
+            "aria-label": "",
+            "type": "post_object",
+            "instructions": "Select the general editor(s) of this issue (from dropdown list).",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "post_type": [
+                "person"
+            ],
+            "post_status": "",
+            "taxonomy": [
+                "category:people"
+            ],
+            "return_format": "object",
+            "multiple": 1,
+            "allow_null": 0,
+            "allow_in_bindings": 0,
+            "bidirectional": 0,
+            "ui": 1,
+            "bidirectional_target": []
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_taxonomy",
+                "operator": "==",
+                "value": "category:people"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1759811269
+}
