@@ -718,6 +718,26 @@ class AdminMenuCustomizer {
 			remove_menu_page( 'pmxi-admin-home' );
 		}
 
+		// Add WP Pusher
+		add_submenu_page(
+			'advanced-menu',
+			'WP Pusher',
+			'WP Pusher',
+			'manage_options',
+			'wppusher'
+		);
+		remove_menu_page( 'wppusher' );
+
+		// Add Kinsta Cache
+		add_submenu_page(
+			'advanced-menu',
+			'Kinsta Cache',
+			'Kinsta Cache',
+			'manage_options',
+			'kinsta-tools'
+		);
+		remove_menu_page( 'kinsta-tools' );
+
 		// Check for any remaining plugin menus and move them
 		$plugin_keywords = array( 'Marketing', 'Analytics', 'Payments', 'Snippets', 'AltText', 'Alt Text', 'All Export', 'All Import' );
 
@@ -990,6 +1010,8 @@ class AdminMenuCustomizer {
 			'pmxe-admin-manage',
 			'pmxe-admin-home',
 			'pmxi-admin-home',
+			'wppusher',
+			'kinsta-tools',
 			'wc-admin&path=/payments/overview',
 			'wc-admin&path=/payments',
 			'wcpay-overview',
