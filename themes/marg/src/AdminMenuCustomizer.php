@@ -53,6 +53,15 @@ class AdminMenuCustomizer {
 		// Adjust parent file for proper highlighting
 		add_filter( 'parent_file', array( $this, 'adjust_parent_file' ) );
 		add_filter( 'submenu_file', array( $this, 'adjust_submenu_file' ), 10, 2 );
+
+		// Reorder product meta boxes
+		add_action( 'add_meta_boxes', array( $this, 'reorder_product_meta_boxes' ), 100 );
+
+		// Add CSS to reorder product edit screen
+		add_action( 'admin_head', array( $this, 'reorder_product_editor_css' ) );
+
+		// Add JavaScript for dynamic ACF field group visibility
+		add_action( 'admin_footer', array( $this, 'product_type_conditional_logic_js' ) );
 	}
 
 	/**
@@ -1193,5 +1202,229 @@ class AdminMenuCustomizer {
 			}
 		});
 		</script>';
+	}
+
+	/**
+	 * Reorder product meta boxes to show description above short description
+	 *
+	 * @return void
+	 */
+	public function reorder_product_meta_boxes() {
+		global $post, $wp_meta_boxes;
+
+		// Only run on product edit screen
+		if ( ! isset( $post->post_type ) || $post->post_type !== 'product' ) {
+			return;
+		}
+
+		// Move Product Data meta box to high priority (appears first)
+		remove_meta_box( 'woocommerce-product-data', 'product', 'normal' );
+		add_meta_box(
+			'woocommerce-product-data',
+			__( 'Product Data', 'woocommerce' ),
+			'WC_Meta_Box_Product_Data::output',
+			'product',
+			'normal',
+			'high'
+		);
+
+		// Remove the short description (excerpt) meta box from its default position
+		remove_meta_box( 'postexcerpt', 'product', 'normal' );
+
+		// Re-add short description with low priority (appears after ACF fields)
+		add_meta_box(
+			'postexcerpt',
+			__( 'Product short description', 'woocommerce' ),
+			'post_excerpt_meta_box',
+			'product',
+			'normal',
+			'low'
+		);
+
+		// Remove AltText.ai meta box from product pages
+		remove_meta_box( 'atai-generate-meta-box', 'product', 'normal' );
+		remove_meta_box( 'atai-generate-meta-box', 'product', 'side' );
+		remove_meta_box( 'atai-generate-meta-box', 'product', 'advanced' );
+	}
+
+	/**
+	 * Add CSS to reorder product editor elements
+	 *
+	 * @return void
+	 */
+	public function reorder_product_editor_css() {
+		global $post;
+
+		// Only on product edit screen
+		if ( ! isset( $post->post_type ) || $post->post_type !== 'product' ) {
+			return;
+		}
+
+		echo '<style>
+			/* Use flexbox to reorder product edit screen elements */
+			#post-body-content,
+			#postbox-container-2 {
+				display: flex;
+				flex-direction: column;
+			}
+
+			/* Desired order:
+			   1. Product title
+			   2. Product details (ACF field groups)
+			   3. Product data
+			   4. Product description (main editor)
+			   5. Product short description
+			   6. Memberships
+			*/
+
+			/* Product title - order -1 to ensure it comes first */
+			#titlediv,
+			#titlewrap {
+				order: -1 !important;
+			}
+
+			/* ACF field groups - order 1 */
+			#acf-group_68514e603efaf,
+			#acf-group_68515df1511ff,
+			#acf-group_685162e07c27b {
+				order: 1 !important;
+			}
+
+			/* Product Data - order 2 */
+			#woocommerce-product-data {
+				order: 2 !important;
+			}
+
+			/* Product description (main editor) - order 3 */
+			#postdivrich {
+				order: 3 !important;
+			}
+
+			/* Product short description - order 4 */
+			#postexcerpt {
+				order: 4 !important;
+			}
+
+			/* Memberships - order 5 */
+			#wc_memberships_restrict_product,
+			#wc-memberships-product-memberships-data {
+				order: 5 !important;
+			}
+
+			/* Other meta boxes - order 6 */
+			.postbox {
+				order: 6 !important;
+			}
+
+			/* Hide ACF detail field groups by default - JavaScript will show the appropriate one */
+			#acf-group_68514e603efaf,
+			#acf-group_68515df1511ff,
+			#acf-group_685162e07c27b {
+				display: none !important;
+			}
+
+			/* Hide taxonomy boxes from sidebar */
+			#product_catdiv,
+			#tagsdiv-product_tag,
+			#tagsdiv-geographic-area,
+			#tagsdiv-subject,
+			#tagsdiv-time-period {
+				display: none !important;
+			}
+		</style>';
+	}
+
+	/**
+	 * Add JavaScript for conditional ACF field group visibility based on Publication Type
+	 *
+	 * @return void
+	 */
+	public function product_type_conditional_logic_js() {
+		global $post;
+
+		// Only on product edit/new screen
+		if ( ! isset( $post->post_type ) || $post->post_type !== 'product' ) {
+			return;
+		}
+
+		?>
+		<script>
+		// Move Product description BEFORE TinyMCE initializes
+		(function() {
+			// Use vanilla JS to move the element as early as possible
+			function moveProductDescription() {
+				var productDescription = document.getElementById('postdivrich');
+				var productData = document.getElementById('woocommerce-product-data');
+
+				if (productDescription && productData && productData.parentNode) {
+					// Insert Product description after Product Data
+					productData.parentNode.insertBefore(productDescription, productData.nextSibling);
+					console.log('Product description moved to correct position');
+				}
+			}
+
+			// Try to move it immediately if DOM is ready
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', moveProductDescription);
+			} else {
+				moveProductDescription();
+			}
+		})();
+
+		jQuery(document).ready(function($) {
+			// Function to show/hide ACF field groups based on Publication Type
+			function toggleACFFieldGroups() {
+				var selectedType = $('select[name="acf[field_68ac2f304ad26]"]').val();
+				var selectedText = $('select[name="acf[field_68ac2f304ad26]"] option:selected').text().toLowerCase().trim();
+
+				// Debug: log the selected text
+				console.log('Selected Publication Type:', selectedText);
+
+				// Hide all detail field groups first (using !important to override CSS)
+				$('#acf-group_68514e603efaf').attr('style', 'display: none !important;'); // Book Details
+				$('#acf-group_68515df1511ff').attr('style', 'display: none !important;'); // Magazine Details
+				$('#acf-group_685162e07c27b').attr('style', 'display: none !important;'); // Article Details
+
+				// Show the appropriate field group based on selection
+				if (selectedText.includes('book')) {
+					console.log('Showing Book Details');
+					$('#acf-group_68514e603efaf').attr('style', 'display: block !important; order: 1 !important;');
+				} else if (selectedText.includes('magazine')) {
+					console.log('Showing Magazine Details');
+					$('#acf-group_68515df1511ff').attr('style', 'display: block !important; order: 1 !important;');
+				} else if (selectedText.includes('article')) {
+					console.log('Showing Article Details');
+					$('#acf-group_685162e07c27b').attr('style', 'display: block !important; order: 1 !important;');
+				}
+
+				// Hide Taxonomy field group for Subscription Plans
+				if (selectedText.includes('subscription plan')) {
+					console.log('Hiding Taxonomy field group for Subscription Plans');
+					$('#acf-group_68e48ee0308e8').attr('style', 'display: none !important;');
+				} else {
+					console.log('Showing Taxonomy field group');
+					$('#acf-group_68e48ee0308e8').attr('style', 'display: block !important;');
+				}
+			}
+
+			// Run on page load with a slight delay to ensure DOM is ready
+			setTimeout(function() {
+				toggleACFFieldGroups();
+			}, 100);
+
+			// Run when Publication Type changes
+			$(document).on('change', 'select[name="acf[field_68ac2f304ad26]"]', function() {
+				toggleACFFieldGroups();
+			});
+
+			// Also listen for ACF's own events
+			if (typeof acf !== 'undefined') {
+				acf.addAction('ready', function() {
+					toggleACFFieldGroups();
+				});
+			}
+		});
+		</script>
+		<?php
 	}
 }

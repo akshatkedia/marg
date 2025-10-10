@@ -3,27 +3,6 @@
     "title": "Article Details",
     "fields": [
         {
-            "key": "field_685162f41fcaf",
-            "label": "Page Range",
-            "name": "page_number",
-            "aria-label": "",
-            "type": "text",
-            "instructions": "Enter the page range in plain text, following the format used in the old system (e.g., pp. 112–125). Use a single page number if the content is only on one page (e.g., p. 45).",
-            "required": 0,
-            "conditional_logic": 0,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "default_value": "",
-            "maxlength": "",
-            "allow_in_bindings": 0,
-            "placeholder": "",
-            "prepend": "",
-            "append": ""
-        },
-        {
             "key": "field_6851635e1fcb3",
             "label": "Parent Publication",
             "name": "parent_publication",
@@ -56,9 +35,30 @@
             "bidirectional_target": []
         },
         {
+            "key": "field_685162f41fcaf",
+            "label": "Page Range",
+            "name": "page_number",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Enter the page range in plain text, following the format used in the old system (e.g., pp. 112–125). Use a single page number if the content is only on one page (e.g., p. 45).",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
             "key": "field_68a6b1c061cfc",
-            "label": "Editors",
-            "name": "editors",
+            "label": "Authors",
+            "name": "authors",
             "aria-label": "",
             "type": "post_object",
             "instructions": "Select the general editor(s) of this issue (from dropdown list).",
@@ -88,9 +88,9 @@
     "location": [
         [
             {
-                "param": "post_taxonomy",
+                "param": "post_type",
                 "operator": "==",
-                "value": "category:people"
+                "value": "product"
             }
         ]
     ],
@@ -103,5 +103,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1759811269
+    "modified": 1759816491
 }

@@ -4,11 +4,11 @@
     "fields": [
         {
             "key": "field_68ac2f304ad26",
-            "label": "Type",
+            "label": "Product Type",
             "name": "type",
             "aria-label": "",
             "type": "taxonomy",
-            "instructions": "",
+            "instructions": "Choose between Magazines, Articles, Books, Gift Sets and Subscription Plans",
             "required": 1,
             "conditional_logic": 0,
             "wrapper": {
@@ -47,5 +47,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1759811297
+    "modified": 1759817398
 }

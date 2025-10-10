@@ -3,12 +3,12 @@
     "title": "Book Details",
     "fields": [
         {
-            "key": "field_689c646db2d73",
-            "label": "Product ID",
-            "name": "product_id",
+            "key": "field_68e4a4a7ab73f",
+            "label": "Subtitle",
+            "name": "subtitle",
             "aria-label": "",
             "type": "text",
-            "instructions": "Reference only. Imported from the old CMS to preserve relationships. This field is not editable.",
+            "instructions": "Optional descriptive tagline or secondary title for the issue",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -24,12 +24,34 @@
             "append": ""
         },
         {
+            "key": "field_689c646db2d73",
+            "label": "Product ID",
+            "name": "product_id",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Reference only. Imported from the old CMS to preserve relationships. This field is not editable.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "readonly": 1,
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
             "key": "field_689d959455d34",
-            "label": "Year",
-            "name": "year",
+            "label": "Publication month & year",
+            "name": "publication_month_year",
             "aria-label": "",
             "type": "group",
-            "instructions": "",
+            "instructions": "Use ranges only for older issues that were published across multiple months. For all current issues, just enter the Month + Year in the Start Date.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -112,11 +134,11 @@
         },
         {
             "key": "field_689c660922d52",
-            "label": "Volume Info",
-            "name": "volume_info",
+            "label": "Book Number",
+            "name": "book_number",
             "aria-label": "",
             "type": "text",
-            "instructions": "Reference only. Imported from the old CMS for archival consistency. This field is not editable.",
+            "instructions": "Imported from the old CMS for archival consistency. Leave blank if not applicable.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -129,12 +151,11 @@
             "allow_in_bindings": 0,
             "placeholder": "",
             "prepend": "",
-            "append": "",
-            "readonly": 1
+            "append": ""
         },
         {
             "key": "field_685157ebb7216",
-            "label": "Chapters",
+            "label": "Book chapters",
             "name": "chapters",
             "aria-label": "",
             "type": "repeater",
@@ -255,9 +276,9 @@
     "location": [
         [
             {
-                "param": "post_taxonomy",
+                "param": "post_type",
                 "operator": "==",
-                "value": "product_cat:books"
+                "value": "product"
             }
         ]
     ],
@@ -270,5 +291,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1759811275
+    "modified": 1759814847
 }

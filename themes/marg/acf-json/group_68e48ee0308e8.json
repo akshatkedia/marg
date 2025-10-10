@@ -8,7 +8,7 @@
             "name": "time_periods",
             "aria-label": "",
             "type": "taxonomy",
-            "instructions": "",
+            "instructions": "Choose from the predefined list; new periods only added sparingly by admins.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -34,7 +34,7 @@
             "name": "subjects",
             "aria-label": "",
             "type": "taxonomy",
-            "instructions": "",
+            "instructions": "Choose from the predefined list; new subjects only added sparingly by admins.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -60,7 +60,7 @@
             "name": "geography",
             "aria-label": "",
             "type": "taxonomy",
-            "instructions": "",
+            "instructions": "Select from the list of countries (global). For India, you can add more granular tags (e.g., Meghalaya, Tanjore).",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -99,5 +99,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1759811303
+    "modified": 1760077648
 }
