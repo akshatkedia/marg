@@ -498,13 +498,13 @@ class AdminMenuCustomizer {
 			// Remove WooCommerce top-level menu
 			remove_menu_page( 'woocommerce' );
 
-			// Add WooCommerce to Advanced submenu for settings/admin access
+			// Add WooCommerce Settings to Advanced submenu
 			add_submenu_page(
 				'advanced-menu',
 				'WooCommerce',
 				'WooCommerce',
 				'manage_woocommerce',
-				'woocommerce'
+				'admin.php?page=wc-settings'
 			);
 		}
 
@@ -1004,6 +1004,8 @@ class AdminMenuCustomizer {
 			'tools.php',
 			'options-general.php',
 			'woocommerce',
+			'wc-settings',
+			'admin.php?page=wc-settings',
 			'woocommerce-marketing',
 			'edit.php?post_type=acf-field-group',
 			'filebird-settings',
