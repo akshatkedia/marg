@@ -90,3 +90,8 @@ $dashboard_documentation->init();
 require_once __DIR__ . '/src/PersonPostType.php';
 $person_post_type = new \TenUpTheme\PersonPostType();
 $person_post_type->init();
+
+// Initialize ACF Sync functionality independently of vendor autoloader
+require_once __DIR__ . '/src/ACFSync.php';
+$acf_sync = new \TenUpTheme\ACFSync();
+$acf_sync->init();
