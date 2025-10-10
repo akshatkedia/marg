@@ -1,6 +1,6 @@
 {
     "key": "group_68e48ee0308e8",
-    "title": "Taxonomy",
+    "title": "Taxonomies",
     "fields": [
         {
             "key": "field_68e48ee04bd49",
@@ -99,5 +99,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1760085271
+    "modified": 1760089203
 }

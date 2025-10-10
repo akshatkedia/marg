@@ -88,9 +88,9 @@
     "location": [
         [
             {
-                "param": "post_taxonomy",
+                "param": "post_type",
                 "operator": "==",
-                "value": "category:people"
+                "value": "product"
             }
         ]
     ],
@@ -103,5 +103,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1760085271
+    "modified": 1760088276
 }

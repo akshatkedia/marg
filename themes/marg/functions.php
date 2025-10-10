@@ -91,7 +91,17 @@ require_once __DIR__ . '/src/PersonPostType.php';
 $person_post_type = new \TenUpTheme\PersonPostType();
 $person_post_type->init();
 
-// Initialize ACF Sync functionality independently of vendor autoloader
-require_once __DIR__ . '/src/ACFSync.php';
-$acf_sync = new \TenUpTheme\ACFSync();
-$acf_sync->init();
+// Initialize ACF Category Filter to hide Uncategorized
+require_once __DIR__ . '/src/ACFCategoryFilter.php';
+$acf_category_filter = new \TenUpTheme\ACFCategoryFilter();
+$acf_category_filter->init();
+
+// Initialize WooCommerce Customizations to remove grouped product type
+require_once __DIR__ . '/src/WooCommerceCustomizations.php';
+$woocommerce_customizations = new \TenUpTheme\WooCommerceCustomizations();
+$woocommerce_customizations->init();
+
+// Temporary: ACF Duplicate Cleanup (remove after cleanup)
+// if ( is_admin() ) {
+// 	require_once __DIR__ . '/acf-cleanup-duplicates.php';
+// }

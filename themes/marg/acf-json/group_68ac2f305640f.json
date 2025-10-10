@@ -26,7 +26,8 @@
             "allow_in_bindings": 0,
             "bidirectional": 0,
             "multiple": 0,
-            "bidirectional_target": []
+            "bidirectional_target": [],
+            "exclude": ["uncategorized"]
         }
     ],
     "location": [
@@ -47,5 +48,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1760085271
+    "modified": 1760091000
 }
