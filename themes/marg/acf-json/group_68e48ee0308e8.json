@@ -8,7 +8,7 @@
             "name": "time_periods",
             "aria-label": "",
             "type": "taxonomy",
-            "instructions": "",
+            "instructions": "Choose from the predefined list; new periods only added sparingly by admins.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -34,7 +34,7 @@
             "name": "subjects",
             "aria-label": "",
             "type": "taxonomy",
-            "instructions": "",
+            "instructions": "Choose from the predefined list; new subjects only added sparingly by admins.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -60,7 +60,7 @@
             "name": "geography",
             "aria-label": "",
             "type": "taxonomy",
-            "instructions": "",
+            "instructions": "Select from the list of countries (global). For India, you can add more granular tags (e.g., Meghalaya, Tanjore).",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -87,11 +87,6 @@
                 "param": "post_type",
                 "operator": "==",
                 "value": "product"
-            },
-            {
-                "param": "post_taxonomy",
-                "operator": "!=",
-                "value": "product_cat:subscription-plans"
             }
         ]
     ],
@@ -104,6 +99,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "display_title": "",
-    "modified": 1760021197
+    "modified": 1760081414
 }

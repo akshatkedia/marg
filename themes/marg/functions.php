@@ -85,3 +85,8 @@ $disable_product_reviews->init();
 require_once __DIR__ . '/src/DashboardDocumentation.php';
 $dashboard_documentation = new \TenUpTheme\DashboardDocumentation();
 $dashboard_documentation->init();
+
+// Initialize Person Post Type functionality independently of vendor autoloader
+require_once __DIR__ . '/src/PersonPostType.php';
+$person_post_type = new \TenUpTheme\PersonPostType();
+$person_post_type->init();

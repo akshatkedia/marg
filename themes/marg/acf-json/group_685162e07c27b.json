@@ -21,7 +21,7 @@
             ],
             "post_status": "",
             "taxonomy": [
-                "product_cat:magazine"
+                "product_cat:magazines"
             ],
             "filters": [
                 "search"
@@ -88,9 +88,9 @@
     "location": [
         [
             {
-                "param": "post_type",
+                "param": "post_taxonomy",
                 "operator": "==",
-                "value": "product"
+                "value": "category:people"
             }
         ]
     ],
@@ -103,5 +103,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1759816491
+    "modified": 1760083925
 }

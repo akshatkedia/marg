@@ -27,6 +27,9 @@ class AdminMenuCustomizer {
 		// Grant WooCommerce product capabilities to Editors
 		add_action( 'init', array( $this, 'grant_editor_woocommerce_caps' ) );
 
+		// Grant custom post type capabilities to Editors and Administrators
+		add_action( 'init', array( $this, 'grant_custom_post_type_caps' ) );
+
 		// Enable revisions for WooCommerce products
 		add_filter( 'woocommerce_register_post_type_product', array( $this, 'enable_product_revisions' ) );
 
@@ -45,6 +48,7 @@ class AdminMenuCustomizer {
 		add_action( 'admin_menu', array( $this, 'reorganize_taxonomies_menu' ), 999 );
 		add_action( 'admin_menu', array( $this, 'reorganize_advanced_menu' ), 999 );
 		add_action( 'admin_menu', array( $this, 'customize_products_submenu' ), 999 );
+		add_action( 'admin_menu', array( $this, 'customize_people_submenu' ), 1000 );
 		add_action( 'admin_menu', array( $this, 'reorder_post_type_menus' ), 9999 );
 
 		// Hide unwanted separators with CSS
@@ -159,6 +163,66 @@ class AdminMenuCustomizer {
 			$editor->add_cap( 'edit_product_terms' );
 			$editor->add_cap( 'delete_product_terms' );
 			$editor->add_cap( 'assign_product_terms' );
+		}
+	}
+
+	/**
+	 * Grant custom post type capabilities to Editors and Administrators
+	 *
+	 * @return void
+	 */
+	public function grant_custom_post_type_caps() {
+		$editor = get_role( 'editor' );
+		$administrator = get_role( 'administrator' );
+
+		// Custom post type capabilities for People
+		$people_caps = array(
+			'edit_people',
+			'read_people',
+			'delete_people',
+			'edit_others_people',
+			'publish_people',
+			'read_private_people',
+			'delete_private_people',
+			'delete_published_people',
+			'delete_others_people',
+			'edit_private_people',
+			'edit_published_people',
+		);
+
+		// Custom post type capabilities for Events
+		$events_caps = array(
+			'edit_events',
+			'read_events',
+			'delete_events',
+			'edit_others_events',
+			'publish_events',
+			'read_private_events',
+			'delete_private_events',
+			'delete_published_events',
+			'delete_others_events',
+			'edit_private_events',
+			'edit_published_events',
+		);
+
+		// Grant capabilities to Editors
+		if ( $editor ) {
+			foreach ( $people_caps as $cap ) {
+				$editor->add_cap( $cap );
+			}
+			foreach ( $events_caps as $cap ) {
+				$editor->add_cap( $cap );
+			}
+		}
+
+		// Grant capabilities to Administrators
+		if ( $administrator ) {
+			foreach ( $people_caps as $cap ) {
+				$administrator->add_cap( $cap );
+			}
+			foreach ( $events_caps as $cap ) {
+				$administrator->add_cap( $cap );
+			}
 		}
 	}
 
@@ -861,6 +925,52 @@ class AdminMenuCustomizer {
 	}
 
 	/**
+	 * Customize the People submenu to add person type links
+	 *
+	 * @return void
+	 */
+	public function customize_people_submenu() {
+		// Remove "Add New Person" submenu
+		remove_submenu_page( 'edit.php?post_type=person', 'post-new.php?post_type=person' );
+
+		// Get actual person-type taxonomy terms from the database
+		$person_type_terms = get_terms( array(
+			'taxonomy'   => 'person-type',
+			'hide_empty' => false,
+		) );
+
+		// If no terms exist, create default ones or use fallback
+		if ( is_wp_error( $person_type_terms ) || empty( $person_type_terms ) ) {
+			// Fallback to hardcoded terms if taxonomy terms don't exist
+			$person_types = array(
+				array( 'name' => 'Contributors', 'slug' => 'contributors' ),
+				array( 'name' => 'General Editor', 'slug' => 'general-editor' ),
+				array( 'name' => 'Team', 'slug' => 'team' ),
+			);
+		} else {
+			// Use actual taxonomy terms
+			$person_types = array();
+			foreach ( $person_type_terms as $term ) {
+				$person_types[] = array(
+					'name' => $term->name,
+					'slug' => $term->slug,
+				);
+			}
+		}
+
+		// Add person type filters as submenu items
+		foreach ( $person_types as $person_type ) {
+			add_submenu_page(
+				'edit.php?post_type=person',
+				$person_type['name'],
+				$person_type['name'],
+				'edit_people', // Use the proper capability for the person post type
+				'edit.php?post_type=person&person-type=' . $person_type['slug']
+			);
+		}
+	}
+
+	/**
 	 * Reorder post type menus to desired order
 	 *
 	 * @return void
@@ -1064,6 +1174,11 @@ class AdminMenuCustomizer {
 		// If we're on a filtered product category page, highlight the category submenu item
 		if ( $parent_file === 'edit.php?post_type=product' && isset( $_GET['product_cat'] ) ) {
 			return 'edit.php?post_type=product&product_cat=' . sanitize_text_field( $_GET['product_cat'] );
+		}
+
+		// If we're on a filtered person type page, highlight the person type submenu item
+		if ( $parent_file === 'edit.php?post_type=person' && isset( $_GET['person-type'] ) ) {
+			return 'edit.php?post_type=person&person-type=' . sanitize_text_field( $_GET['person-type'] );
 		}
 
 		// If we're on WooCommerce Orders page, highlight it
