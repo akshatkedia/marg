@@ -1321,7 +1321,8 @@ class AdminMenuCustomizer {
 			/* Hide ACF detail field groups by default - JavaScript will show the appropriate one */
 			#acf-group_68514e603efaf,
 			#acf-group_68515df1511ff,
-			#acf-group_685162e07c27b {
+			#acf-group_685162e07c27b,
+			#acf-group_68e48ee0308e8 {
 				display: none !important;
 			}
 
@@ -1399,13 +1400,19 @@ class AdminMenuCustomizer {
 					$('#acf-group_685162e07c27b').attr('style', 'display: block !important; order: 1 !important;');
 				}
 
-				// Hide Taxonomy field group for Subscription Plans
-				if (selectedText.includes('subscription plan')) {
-					console.log('Hiding Taxonomy field group for Subscription Plans');
+				// Show/hide Taxonomy field group based on Publication Type
+				// Hide if: no selection, placeholder text, or Subscription Plan
+				// Show only if: a valid Publication Type is selected AND it's not Subscription Plan
+				if (!selectedText || selectedText === 'select' || selectedText === '' || selectedText.includes('subscription plan')) {
+					console.log('Hiding Taxonomy field group (no selection or Subscription Plan)');
 					$('#acf-group_68e48ee0308e8').attr('style', 'display: none !important;');
-				} else {
+				} else if (selectedText.includes('book') || selectedText.includes('magazine') || selectedText.includes('article')) {
 					console.log('Showing Taxonomy field group');
 					$('#acf-group_68e48ee0308e8').attr('style', 'display: block !important;');
+				} else {
+					// For any other text that's not empty/placeholder, keep it hidden by default
+					console.log('Hiding Taxonomy field group (unknown type)');
+					$('#acf-group_68e48ee0308e8').attr('style', 'display: none !important;');
 				}
 			}
 
