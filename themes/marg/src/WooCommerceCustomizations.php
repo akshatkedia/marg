@@ -5,6 +5,7 @@
  * Customizes WooCommerce functionality including:
  * - Removing grouped and external/affiliate product types
  * - Removing upsells functionality
+ * - Hiding shipping options for downloadable simple products
  *
  * @package TenUpTheme
  */
@@ -45,6 +46,9 @@ class WooCommerceCustomizations {
 
 		// Remove upsells functionality
 		$this->remove_upsells_functionality();
+
+		// Clear shipping data for downloadable products
+		add_action( 'woocommerce_admin_process_product_object', array( $this, 'clear_shipping_for_downloadable' ) );
 	}
 
 	/**
@@ -148,6 +152,18 @@ class WooCommerceCustomizations {
 			.up-sells.upsells.products,
 			.upsells.products,
 			section.up-sells {
+				display: none !important;
+			}
+
+			/* Hide shipping options for downloadable products */
+			.product-type-simple.downloadable-product .shipping_tab_options,
+			.product-type-simple.downloadable-product ._weight_field,
+			.product-type-simple.downloadable-product ._length_field,
+			.product-type-simple.downloadable-product ._width_field,
+			.product-type-simple.downloadable-product ._height_field,
+			.product-type-simple.downloadable-product .dimensions_field,
+			.product-type-simple.downloadable-product .wc-shipping-class-field,
+			.product-type-simple.downloadable-product .product_shipping_class {
 				display: none !important;
 			}
 		</style>
@@ -259,6 +275,74 @@ class WooCommerceCustomizations {
 					$('label[for="upsell_ids"]').parent().hide();
 					$('#upsell_ids').closest('.form-field').hide();
 				}, 100);
+			});
+
+			// Hide shipping options for downloadable products
+			function toggleShippingOptionsForDownloadable() {
+				var $body = $('body');
+				var isDownloadable = $('#_downloadable').is(':checked');
+				var productType = $('#product-type').val();
+
+				if (isDownloadable && productType === 'simple') {
+					// Add class to body for CSS targeting
+					$body.addClass('downloadable-product');
+
+					// Hide shipping-related fields
+					$('._weight_field').hide();
+					$('._length_field').hide();
+					$('._width_field').hide();
+					$('._height_field').hide();
+					$('.dimensions_field').hide();
+					$('.wc-shipping-class-field').hide();
+					$('.product_shipping_class').hide();
+					$('.shipping_tab_options').hide();
+
+					// Hide Shipping tab if it exists
+					$('.shipping_options').hide();
+				} else {
+					// Remove class from body
+					$body.removeClass('downloadable-product');
+
+					// Show shipping-related fields
+					$('._weight_field').show();
+					$('._length_field').show();
+					$('._width_field').show();
+					$('._height_field').show();
+					$('.dimensions_field').show();
+					$('.wc-shipping-class-field').show();
+					$('.product_shipping_class').show();
+					$('.shipping_tab_options').show();
+
+					// Show Shipping tab
+					$('.shipping_options').show();
+				}
+			}
+
+			// Run on page load
+			toggleShippingOptionsForDownloadable();
+
+			// Run when downloadable checkbox changes
+			$('#_downloadable').on('change', function() {
+				var isChecked = $(this).is(':checked');
+
+				// Switch to General tab when downloadable is checked
+				if (isChecked) {
+					$('.general_options a').trigger('click');
+				}
+
+				toggleShippingOptionsForDownloadable();
+			});
+
+			// Run when product type changes
+			$('#product-type').on('change', function() {
+				toggleShippingOptionsForDownloadable();
+			});
+
+			// Run when switching tabs
+			$('.product_data_tabs').on('click', 'li', function() {
+				setTimeout(function() {
+					toggleShippingOptionsForDownloadable();
+				}, 50);
 			});
 		});
 		</script>
@@ -477,5 +561,27 @@ class WooCommerceCustomizations {
 		wc_delete_product_transients();
 
 		return $results;
+	}
+
+	/**
+	 * Clear shipping data for downloadable products
+	 *
+	 * @param \WC_Product $product Product object.
+	 * @return void
+	 */
+	public function clear_shipping_for_downloadable( $product ) {
+		// Only process simple downloadable products
+		if ( $product->is_type( 'simple' ) && $product->is_downloadable() ) {
+			// Clear weight
+			$product->set_weight( '' );
+
+			// Clear dimensions
+			$product->set_length( '' );
+			$product->set_width( '' );
+			$product->set_height( '' );
+
+			// Clear shipping class
+			$product->set_shipping_class_id( 0 );
+		}
 	}
 }
