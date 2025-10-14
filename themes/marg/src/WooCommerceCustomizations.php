@@ -53,6 +53,12 @@ class WooCommerceCustomizations {
 
 		// Auto-set simple downloadable for Articles category
 		add_action( 'woocommerce_admin_process_product_object', array( $this, 'auto_set_articles_as_downloadable' ), 5 );
+
+		// Add out of print checkbox for Print variations
+		add_action( 'woocommerce_variation_options', array( $this, 'add_out_of_print_checkbox_to_variations' ), 10, 3 );
+
+		// Save out of print checkbox value
+		add_action( 'woocommerce_save_product_variation', array( $this, 'save_out_of_print_variation_field' ), 10, 2 );
 	}
 
 	/**
@@ -602,6 +608,66 @@ class WooCommerceCustomizations {
 					checkVariableCategoriesAndSetProductType();
 				});
 			}
+
+			// Show/hide "Out of print" checkbox based on Medium attribute
+			function toggleOutOfPrintCheckbox() {
+				$('.woocommerce_variation').each(function() {
+					var $variation = $(this);
+					var $outOfPrintField = $variation.find('.variable_out_of_print_field');
+
+					// Find the Medium attribute select in this variation (note: underscore not hyphen)
+					var $mediumSelect = $variation.find('select[name^="attribute_pa_medium"]');
+
+					if (!$mediumSelect.length) {
+						// If no select found, check for hidden input (if attribute is already set)
+						var $mediumInput = $variation.find('input[name^="attribute_pa_medium"]');
+						if ($mediumInput.length) {
+							var mediumValue = $mediumInput.val();
+							if (mediumValue === 'print') {
+								$outOfPrintField.show();
+							} else {
+								$outOfPrintField.hide();
+							}
+						} else {
+							// No medium attribute found, hide by default
+							$outOfPrintField.hide();
+						}
+						return;
+					}
+
+					var selectedMedium = $mediumSelect.val();
+
+					// Show checkbox only for Print medium
+					if (selectedMedium === 'print') {
+						$outOfPrintField.show();
+					} else {
+						$outOfPrintField.hide();
+					}
+				});
+			}
+
+			// Run on page load
+			setTimeout(toggleOutOfPrintCheckbox, 500);
+
+			// Run when variations are loaded/reloaded
+			$('#variable_product_options').on('woocommerce_variations_loaded', function() {
+				setTimeout(toggleOutOfPrintCheckbox, 100);
+			});
+
+			// Run when a variation is added
+			$('#variable_product_options').on('woocommerce_variations_added', function() {
+				setTimeout(toggleOutOfPrintCheckbox, 100);
+			});
+
+			// Run when Medium attribute changes (note: underscore not hyphen)
+			$(document).on('change', 'select[name^="attribute_pa_medium"]', function() {
+				setTimeout(toggleOutOfPrintCheckbox, 100);
+			});
+
+			// Run when variation panel is opened
+			$(document).on('click', '.woocommerce_variation h3', function() {
+				setTimeout(toggleOutOfPrintCheckbox, 100);
+			});
 		});
 		</script>
 		<?php
@@ -832,5 +898,38 @@ class WooCommerceCustomizations {
 		}
 
 		$product->set_downloadable( true );
+	}
+
+	/**
+	 * Add out of print checkbox to variation options for Print variations.
+	 *
+	 * @param int     $loop           Variation loop counter.
+	 * @param array   $variation_data Variation data.
+	 * @param WP_Post $variation      Variation post object.
+	 * @return void
+	 */
+	public function add_out_of_print_checkbox_to_variations( $loop, $variation_data, $variation ) {
+		$out_of_print = get_post_meta( $variation->ID, '_out_of_print', true );
+		?>
+		<label class="tips variable_out_of_print_field" data-tip="<?php esc_attr_e( 'Mark this print variation as out of print', 'woocommerce' ); ?>">
+			<?php esc_html_e( 'Out of print', 'woocommerce' ); ?>
+			<input type="checkbox" class="checkbox variable_out_of_print" name="variable_out_of_print[<?php echo esc_attr( $loop ); ?>]" <?php checked( $out_of_print, 'yes' ); ?> />
+		</label>
+		<?php
+	}
+
+	/**
+	 * Save out of print checkbox value for variations.
+	 *
+	 * @param int $variation_id Variation ID.
+	 * @param int $loop         Variation loop counter.
+	 * @return void
+	 */
+	public function save_out_of_print_variation_field( $variation_id, $loop ) {
+		if ( isset( $_POST['variable_out_of_print'][ $loop ] ) ) {
+			update_post_meta( $variation_id, '_out_of_print', 'yes' );
+		} else {
+			update_post_meta( $variation_id, '_out_of_print', 'no' );
+		}
 	}
 }

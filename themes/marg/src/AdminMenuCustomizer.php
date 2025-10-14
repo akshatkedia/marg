@@ -1387,11 +1387,12 @@ class AdminMenuCustomizer {
 
 			/* Desired order:
 			   1. Product title
-			   2. Product details (ACF field groups)
-			   3. Product data
-			   4. Product description (main editor)
-			   5. Product short description
-			   6. Memberships
+			   2. Product details (ACF field groups - Book/Magazine/Article Details)
+			   3. Taxonomy (appears after detail groups)
+			   4. Product data
+			   5. Product description (main editor)
+			   6. Product short description
+			   7. Memberships
 			*/
 
 			/* Product title - order -1 to ensure it comes first */
@@ -1400,37 +1401,42 @@ class AdminMenuCustomizer {
 				order: -1 !important;
 			}
 
-			/* ACF field groups - order 1 */
+			/* ACF detail field groups - order 10 (Book/Magazine/Article Details) */
 			#acf-group_68514e603efaf,
 			#acf-group_68515df1511ff,
 			#acf-group_685162e07c27b {
-				order: 1 !important;
+				order: 10 !important;
 			}
 
-			/* Product Data - order 2 */
+			/* Taxonomy field group - order 20 (appears after detail groups) */
+			#acf-group_68e48ee0308e8 {
+				order: 20 !important;
+			}
+
+			/* Product Data - order 30 */
 			#woocommerce-product-data {
-				order: 2 !important;
+				order: 30 !important;
 			}
 
-			/* Product description (main editor) - order 3 */
+			/* Product description (main editor) - order 40 */
 			#postdivrich {
-				order: 3 !important;
+				order: 40 !important;
 			}
 
-			/* Product short description - order 4 */
+			/* Product short description - order 50 */
 			#postexcerpt {
-				order: 4 !important;
+				order: 50 !important;
 			}
 
-			/* Memberships - order 5 */
+			/* Memberships - order 60 */
 			#wc_memberships_restrict_product,
 			#wc-memberships-product-memberships-data {
-				order: 5 !important;
+				order: 60 !important;
 			}
 
-			/* Other meta boxes - order 6 */
+			/* Other meta boxes - order 70 */
 			.postbox {
-				order: 6 !important;
+				order: 70 !important;
 			}
 
 			/* Hide ACF detail field groups by default - JavaScript will show the appropriate one */
@@ -1506,13 +1512,13 @@ class AdminMenuCustomizer {
 				// Show the appropriate field group based on selection
 				if (selectedText.includes('book')) {
 					console.log('Showing Book Details');
-					$('#acf-group_68514e603efaf').attr('style', 'display: block !important; order: 1 !important;');
+					$('#acf-group_68514e603efaf').attr('style', 'display: block !important; order: 10 !important;');
 				} else if (selectedText.includes('magazine')) {
 					console.log('Showing Magazine Details');
-					$('#acf-group_68515df1511ff').attr('style', 'display: block !important; order: 1 !important;');
+					$('#acf-group_68515df1511ff').attr('style', 'display: block !important; order: 10 !important;');
 				} else if (selectedText.includes('article')) {
 					console.log('Showing Article Details');
-					$('#acf-group_685162e07c27b').attr('style', 'display: block !important; order: 1 !important;');
+					$('#acf-group_685162e07c27b').attr('style', 'display: block !important; order: 10 !important;');
 				}
 
 				// Show/hide Taxonomy field group based on Publication Type
@@ -1523,7 +1529,7 @@ class AdminMenuCustomizer {
 					$('#acf-group_68e48ee0308e8').attr('style', 'display: none !important;');
 				} else if (selectedText.includes('book') || selectedText.includes('magazine') || selectedText.includes('article')) {
 					console.log('Showing Taxonomy field group');
-					$('#acf-group_68e48ee0308e8').attr('style', 'display: block !important;');
+					$('#acf-group_68e48ee0308e8').attr('style', 'display: block !important; order: 20 !important;');
 				} else {
 					// For any other text that's not empty/placeholder, keep it hidden by default
 					console.log('Hiding Taxonomy field group (unknown type)');

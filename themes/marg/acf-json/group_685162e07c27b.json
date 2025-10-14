@@ -61,7 +61,7 @@
             "name": "authors",
             "aria-label": "",
             "type": "post_object",
-            "instructions": "Select/add author(s) who contributed to the issue.",
+            "instructions": "Select the general editor(s) of this issue (from dropdown list).",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -74,7 +74,7 @@
             ],
             "post_status": "",
             "taxonomy": [
-                "category:people"
+                "person-type:contributor"
             ],
             "return_format": "object",
             "multiple": 1,
@@ -103,5 +103,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1760088276
+    "modified": 1760410559
 }
