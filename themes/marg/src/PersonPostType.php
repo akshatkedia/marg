@@ -95,7 +95,7 @@ class PersonPostType {
 			return;
 		}
 
-		echo '<style>
+		$output = '<style>
 			/* Hide the title field for Person post type */
 			.post-type-person #titlediv {
 				display: none;
@@ -112,5 +112,26 @@ class PersonPostType {
 				font-style: italic;
 			}
 		</style>';
+
+		if ( $screen->base === 'edit' && isset( $_GET['person-type'] ) ) {
+			$heading_overrides = array(
+				'contributor'     => 'Contributors',
+				'general-editor'  => 'General Editors',
+				'team'            => 'Team',
+			);
+			$person_type = sanitize_key( $_GET['person-type'] );
+			if ( isset( $heading_overrides[ $person_type ] ) ) {
+				$output .= '<script>
+					document.addEventListener("DOMContentLoaded", function() {
+						var heading = document.querySelector(".wrap .wp-heading-inline");
+						if ( heading ) {
+							heading.textContent = "' . esc_js( $heading_overrides[ $person_type ] ) . '";
+						}
+					});
+				</script>';
+			}
+		}
+
+		echo $output;
 	}
 }

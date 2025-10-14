@@ -6,6 +6,7 @@
  * - Removing grouped and external/affiliate product types
  * - Removing upsells functionality
  * - Hiding shipping options for downloadable simple products
+ * - Auto-setting Articles category products as simple and downloadable
  *
  * @package TenUpTheme
  */
@@ -49,6 +50,9 @@ class WooCommerceCustomizations {
 
 		// Clear shipping data for downloadable products
 		add_action( 'woocommerce_admin_process_product_object', array( $this, 'clear_shipping_for_downloadable' ) );
+
+		// Auto-set simple downloadable for Articles category
+		add_action( 'woocommerce_admin_process_product_object', array( $this, 'auto_set_articles_as_downloadable' ), 5 );
 	}
 
 	/**
@@ -168,6 +172,17 @@ class WooCommerceCustomizations {
 			}
 		</style>
 		<?php
+
+		if ( $screen->base === 'edit' && isset( $_GET['product_cat'] ) ) {
+			$category_slug = sanitize_title( wp_unslash( $_GET['product_cat'] ) );
+			$term = get_term_by( 'slug', $category_slug, 'product_cat' );
+			if ( $term && ! is_wp_error( $term ) ) {
+				printf(
+					'<script>document.addEventListener("DOMContentLoaded",function(){var heading=document.querySelector(".wrap .wp-heading-inline");if(heading){heading.textContent=%s;}});</script>',
+					wp_json_encode( $term->name )
+				);
+			}
+		}
 	}
 
 	/**
@@ -222,6 +237,155 @@ class WooCommerceCustomizations {
 		?>
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
+			var VARIABLE_CATEGORY_SLUGS = ['books', 'magazines'];
+			var ARTICLE_CATEGORY_SLUGS = ['articles'];
+
+			function slugifyCategoryText(text) {
+				if (!text) {
+					return '';
+				}
+
+				return text
+					.toString()
+					.toLowerCase()
+					.replace(/\([^)]+\)/g, '')
+					.replace(/&/g, 'and')
+					.replace(/[^a-z0-9]+/g, '-')
+					.replace(/^-+|-+$/g, '');
+			}
+
+			function getCheckboxLabelText($checkbox) {
+				var $label = $checkbox.next('label');
+				if (!$label.length) {
+					$label = $checkbox.siblings('label').first();
+				}
+				if (!$label.length) {
+					$label = $checkbox.parent().find('label').first();
+				}
+				return $label.length ? $label.text() : '';
+			}
+
+			function extractCategorySlugFromCheckbox($checkbox) {
+				return slugifyCategoryText(getCheckboxLabelText($checkbox));
+			}
+
+			function setProductType(type) {
+				var $productType = $('#product-type');
+				if (!$productType.length) {
+					return;
+				}
+
+				if ($productType.val() !== type) {
+					$productType.val(type).trigger('change');
+				}
+			}
+
+			function categoryTextMatchesSlugList(text, slugs) {
+				if (!text) {
+					return false;
+				}
+
+				var slug = slugifyCategoryText(text);
+				return slug && slugs.indexOf(slug) !== -1;
+			}
+
+			function isCategorySelected(slugs) {
+				var matchFound = false;
+
+				function checkCheckbox($checkbox) {
+					var labelText = getCheckboxLabelText($checkbox);
+					if (categoryTextMatchesSlugList(labelText, slugs)) {
+						matchFound = true;
+						return true;
+					}
+
+					return false;
+				}
+
+				$('#product_catchecklist input[type="checkbox"]:checked').each(function() {
+					if (checkCheckbox($(this))) {
+						return false;
+					}
+				});
+
+				if (matchFound) {
+					return true;
+				}
+
+				$('#taxonomy-product_cat input[type="checkbox"]:checked').each(function() {
+					if (checkCheckbox($(this))) {
+						return false;
+					}
+				});
+
+				if (matchFound) {
+					return true;
+				}
+
+				$('.categorychecklist input[type="checkbox"]:checked').each(function() {
+					if (checkCheckbox($(this))) {
+						return false;
+					}
+				});
+
+				if (matchFound) {
+					return true;
+				}
+
+				$('.wc-product-search').each(function() {
+					if (matchFound) {
+						return false;
+					}
+
+					var select2Data = null;
+					try {
+						if (typeof $(this).select2 === 'function' && $(this).data('select2')) {
+							select2Data = $(this).select2('data');
+						}
+					} catch (error) {
+						select2Data = null;
+					}
+
+					if (select2Data && Array.isArray(select2Data)) {
+						select2Data.forEach(function(item) {
+							if (matchFound) {
+								return;
+							}
+
+							if (item && item.text && categoryTextMatchesSlugList(item.text, slugs)) {
+								matchFound = true;
+							}
+						});
+					}
+				});
+
+				return matchFound;
+			}
+
+			function checkVariableCategoriesAndSetProductType() {
+				console.log('Checking for variable product categories...');
+				var shouldBeVariable = isCategorySelected(VARIABLE_CATEGORY_SLUGS);
+
+				if (!shouldBeVariable) {
+					var $publicationType = $('select[name="acf[field_68ac2f304ad26]"]');
+					if ($publicationType.length) {
+						var selectedText = $publicationType.find('option:selected').text();
+						console.log('ACF Publication Type selected:', selectedText);
+						if (categoryTextMatchesSlugList(selectedText, VARIABLE_CATEGORY_SLUGS)) {
+							shouldBeVariable = true;
+							console.log('Match found in ACF field.');
+						}
+					}
+				}
+
+				if (shouldBeVariable) {
+					console.log('Setting product type to variable.');
+					setProductType('variable');
+				} else {
+					console.log('No variable category match found.');
+				}
+			}
+
 			// Remove grouped and external options from product type selector
 			$('#product-type option[value="grouped"]').remove();
 			$('#product-type option[value="external"]').remove();
@@ -344,6 +508,100 @@ class WooCommerceCustomizations {
 					toggleShippingOptionsForDownloadable();
 				}, 50);
 			});
+
+			// Auto-set simple downloadable for Articles category
+			function checkArticlesCategoryAndSetDownloadable() {
+				var hasArticles = isCategorySelected(ARTICLE_CATEGORY_SLUGS);
+
+				if (!hasArticles) {
+					var $publicationType = $('select[name="acf[field_68ac2f304ad26]"]');
+					if ($publicationType.length) {
+						var selectedText = $publicationType.find('option:selected').text();
+						if (categoryTextMatchesSlugList(selectedText, ARTICLE_CATEGORY_SLUGS)) {
+							hasArticles = true;
+						}
+					}
+				}
+
+				if (!hasArticles) {
+					return;
+				}
+
+				var $productType = $('#product-type');
+				if ($productType.length && $productType.val() !== 'simple') {
+					$productType.val('simple').trigger('change');
+				}
+
+				setTimeout(function() {
+					var $downloadable = $('#_downloadable');
+					if (!$downloadable.length) {
+						return;
+					}
+
+					if (!$downloadable.is(':checked')) {
+						$downloadable.prop('disabled', false);
+						$downloadable.prop('checked', true);
+						$downloadable.trigger('change');
+					}
+				}, 500);
+			}
+
+			// Run on page load with multiple attempts
+			setTimeout(function() {
+				checkArticlesCategoryAndSetDownloadable();
+				checkVariableCategoriesAndSetProductType();
+			}, 500);
+
+			setTimeout(function() {
+				checkArticlesCategoryAndSetDownloadable();
+				checkVariableCategoriesAndSetProductType();
+			}, 1000);
+
+			setTimeout(function() {
+				checkArticlesCategoryAndSetDownloadable();
+				checkVariableCategoriesAndSetProductType();
+			}, 2000);
+
+			// Run when categories change (checkbox) - use multiple selectors
+			$(document).on('change', '#product_catchecklist input[type="checkbox"]', function() {
+				setTimeout(checkArticlesCategoryAndSetDownloadable, 100);
+				setTimeout(checkVariableCategoriesAndSetProductType, 100);
+			});
+
+			$(document).on('change', '#taxonomy-product_cat input[type="checkbox"]', function() {
+				setTimeout(checkArticlesCategoryAndSetDownloadable, 100);
+				setTimeout(checkVariableCategoriesAndSetProductType, 100);
+			});
+
+			$(document).on('change', '.categorychecklist input[type="checkbox"]', function() {
+				setTimeout(checkArticlesCategoryAndSetDownloadable, 100);
+				setTimeout(checkVariableCategoriesAndSetProductType, 100);
+			});
+
+			// Run when Select2 categories change
+			$(document).on('change', 'select.wc-product-search', function() {
+				setTimeout(checkArticlesCategoryAndSetDownloadable, 100);
+				setTimeout(checkVariableCategoriesAndSetProductType, 100);
+			});
+
+			// Listen for any category-related clicks
+			$(document).on('click', '#product_catchecklist-pop label', function() {
+				setTimeout(checkArticlesCategoryAndSetDownloadable, 200);
+				setTimeout(checkVariableCategoriesAndSetProductType, 200);
+			});
+
+			// Listen for ACF Publication Type field changes (the actual field that controls article selection)
+			$(document).on('change', 'select[name="acf[field_68ac2f304ad26]"]', function() {
+				setTimeout(checkArticlesCategoryAndSetDownloadable, 100);
+			});
+
+			// Also listen for ACF's own events if ACF is available
+			if (typeof acf !== 'undefined') {
+				acf.addAction('ready', function() {
+					checkArticlesCategoryAndSetDownloadable();
+					checkVariableCategoriesAndSetProductType();
+				});
+			}
 		});
 		</script>
 		<?php
@@ -374,33 +632,29 @@ class WooCommerceCustomizations {
 	}
 
 	/**
-	 * Convert existing unwanted products to simple products
-	 * This is a utility method that can be called manually if needed
+	 * Convert existing unwanted products to simple products.
 	 *
-	 * @param string $type Product type to convert ('grouped' or 'external' or 'all').
-	 * @return array Results of the conversion
+	 * @param string $type Product type to convert ('grouped', 'external', or 'all').
+	 * @return array
 	 */
 	public function convert_unwanted_to_simple( $type = 'all' ) {
 		$results = array(
 			'converted' => 0,
-			'errors' => 0,
-			'products' => array(),
+			'errors'    => 0,
+			'products'  => array(),
 		);
 
 		$types_to_convert = array();
 
-		// Determine which types to convert
 		if ( 'all' === $type ) {
 			$types_to_convert = array( 'grouped', 'external' );
 		} elseif ( in_array( $type, array( 'grouped', 'external' ), true ) ) {
 			$types_to_convert = array( $type );
 		} else {
-			return $results; // Invalid type specified
+			return $results;
 		}
 
-		// Process each type
 		foreach ( $types_to_convert as $product_type ) {
-			// Get all products of the specified type
 			$args = array(
 				'type'   => $product_type,
 				'limit'  => -1,
@@ -411,25 +665,21 @@ class WooCommerceCustomizations {
 
 			foreach ( $products as $product ) {
 				try {
-					// Convert to simple product
 					$product_id = $product->get_id();
 					wp_set_object_terms( $product_id, 'simple', 'product_type' );
 
-					// Clear type-specific meta
 					if ( 'grouped' === $product_type ) {
-						// Clear grouped children
 						delete_post_meta( $product_id, '_children' );
 					} elseif ( 'external' === $product_type ) {
-						// Clear external product meta
 						delete_post_meta( $product_id, '_product_url' );
 						delete_post_meta( $product_id, '_button_text' );
 					}
 
 					$results['converted']++;
 					$results['products'][] = array(
-						'id'         => $product_id,
-						'name'       => $product->get_name(),
-						'old_type'   => $product_type,
+						'id'       => $product_id,
+						'name'     => $product->get_name(),
+						'old_type' => $product_type,
 					);
 				} catch ( \Exception $e ) {
 					$results['errors']++;
@@ -437,39 +687,31 @@ class WooCommerceCustomizations {
 			}
 		}
 
-		// Clear product transients
 		wc_delete_product_transients();
 
 		return $results;
 	}
 
 	/**
-	 * Remove upsells functionality from WooCommerce
+	 * Remove upsells functionality hooks.
 	 *
 	 * @return void
 	 */
 	public function remove_upsells_functionality() {
-		// Remove upsells display from single product pages
 		add_action( 'init', function() {
 			remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_upsell_display', 15 );
 		}, 20 );
 
-		// Filter to return empty array for upsell IDs
 		add_filter( 'woocommerce_product_get_upsell_ids', '__return_empty_array', 999 );
 		add_filter( 'woocommerce_product_variation_get_upsell_ids', '__return_empty_array', 999 );
 
-		// Remove upsell IDs when saving product
 		add_action( 'woocommerce_admin_process_product_object', array( $this, 'remove_upsell_ids_on_save' ) );
-
-		// Filter REST API to remove upsell_ids
 		add_filter( 'woocommerce_rest_prepare_product_object', array( $this, 'remove_upsells_from_api' ), 10, 3 );
-
-		// Prevent upsells from being set via REST API
 		add_filter( 'woocommerce_rest_pre_insert_product_object', array( $this, 'prevent_upsells_via_api' ), 10, 2 );
 	}
 
 	/**
-	 * Remove upsell IDs when saving a product
+	 * Clear upsell IDs when saving a product.
 	 *
 	 * @param \WC_Product $product Product object.
 	 * @return void
@@ -479,7 +721,7 @@ class WooCommerceCustomizations {
 	}
 
 	/**
-	 * Remove upsells from REST API responses
+	 * Strip upsell IDs from REST API responses.
 	 *
 	 * @param \WP_REST_Response $response The response object.
 	 * @param \WC_Product       $product  Product object.
@@ -489,7 +731,6 @@ class WooCommerceCustomizations {
 	public function remove_upsells_from_api( $response, $product, $request ) {
 		$data = $response->get_data();
 
-		// Remove upsell_ids from response
 		if ( isset( $data['upsell_ids'] ) ) {
 			$data['upsell_ids'] = array();
 		}
@@ -499,32 +740,29 @@ class WooCommerceCustomizations {
 	}
 
 	/**
-	 * Prevent upsells from being set via REST API
+	 * Block upsells from being set via REST API.
 	 *
 	 * @param \WC_Product      $product Product object.
 	 * @param \WP_REST_Request $request Request object.
 	 * @return \WC_Product
 	 */
 	public function prevent_upsells_via_api( $product, $request ) {
-		// Clear any upsell_ids that might be set
 		$product->set_upsell_ids( array() );
 		return $product;
 	}
 
 	/**
-	 * Utility function to clear all upsell relationships
-	 * This can be called manually to remove all existing upsells
+	 * Clear all existing upsell relationships.
 	 *
-	 * @return array Results of the clearing operation
+	 * @return array
 	 */
 	public function clear_all_upsells() {
 		$results = array(
-			'cleared' => 0,
-			'errors'  => 0,
+			'cleared'  => 0,
+			'errors'   => 0,
 			'products' => array(),
 		);
 
-		// Get all products
 		$args = array(
 			'limit'  => -1,
 			'return' => 'objects',
@@ -534,54 +772,65 @@ class WooCommerceCustomizations {
 
 		foreach ( $products as $product ) {
 			$upsell_ids = $product->get_upsell_ids();
+			if ( empty( $upsell_ids ) ) {
+				continue;
+			}
 
-			// Only process if product has upsells
-			if ( ! empty( $upsell_ids ) ) {
-				try {
-					// Clear upsell IDs
-					$product->set_upsell_ids( array() );
-					$product->save();
+			try {
+				$product->set_upsell_ids( array() );
+				$product->save();
+				delete_post_meta( $product->get_id(), '_upsell_ids' );
 
-					// Also clear the meta directly
-					delete_post_meta( $product->get_id(), '_upsell_ids' );
-
-					$results['cleared']++;
-					$results['products'][] = array(
-						'id'   => $product->get_id(),
-						'name' => $product->get_name(),
-						'old_upsell_ids' => $upsell_ids,
-					);
-				} catch ( \Exception $e ) {
-					$results['errors']++;
-				}
+				$results['cleared']++;
+				$results['products'][] = array(
+					'id'             => $product->get_id(),
+					'name'           => $product->get_name(),
+					'old_upsell_ids' => $upsell_ids,
+				);
+			} catch ( \Exception $e ) {
+				$results['errors']++;
 			}
 		}
 
-		// Clear product transients
 		wc_delete_product_transients();
 
 		return $results;
 	}
 
 	/**
-	 * Clear shipping data for downloadable products
+	 * Clear shipping data for downloadable products.
 	 *
 	 * @param \WC_Product $product Product object.
 	 * @return void
 	 */
 	public function clear_shipping_for_downloadable( $product ) {
-		// Only process simple downloadable products
 		if ( $product->is_type( 'simple' ) && $product->is_downloadable() ) {
-			// Clear weight
 			$product->set_weight( '' );
-
-			// Clear dimensions
 			$product->set_length( '' );
 			$product->set_width( '' );
 			$product->set_height( '' );
-
-			// Clear shipping class
 			$product->set_shipping_class_id( 0 );
 		}
+	}
+
+	/**
+	 * Auto-set Articles products as simple downloadable.
+	 *
+	 * @param \WC_Product $product Product object.
+	 * @return void
+	 */
+	public function auto_set_articles_as_downloadable( $product ) {
+		$product_id = $product->get_id();
+		$categories = wp_get_post_terms( $product_id, 'product_cat', array( 'fields' => 'names' ) );
+
+		if ( is_wp_error( $categories ) || ! in_array( 'Articles', $categories, true ) ) {
+			return;
+		}
+
+		if ( ! $product->is_type( 'simple' ) ) {
+			wp_set_object_terms( $product_id, 'simple', 'product_type' );
+		}
+
+		$product->set_downloadable( true );
 	}
 }

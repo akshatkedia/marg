@@ -21,7 +21,7 @@
             "save_terms": 1,
             "load_terms": 1,
             "return_format": "id",
-            "field_type": "select",
+            "field_type": "multi_select",
             "allow_null": 1,
             "allow_in_bindings": 0,
             "bidirectional": 0,
@@ -47,7 +47,7 @@
             "save_terms": 1,
             "load_terms": 1,
             "return_format": "id",
-            "field_type": "select",
+            "field_type": "multi_select",
             "allow_null": 1,
             "allow_in_bindings": 0,
             "bidirectional": 0,
@@ -73,7 +73,7 @@
             "save_terms": 1,
             "load_terms": 1,
             "return_format": "id",
-            "field_type": "select",
+            "field_type": "multi_select",
             "allow_null": 1,
             "allow_in_bindings": 0,
             "bidirectional": 0,
@@ -99,5 +99,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1760089203
+    "modified": 1760165055
 }

@@ -104,12 +104,41 @@
             ]
         },
         {
+            "key": "field_68e9f9711c2bd",
+            "label": "General Editors",
+            "name": "general_editors",
+            "aria-label": "",
+            "type": "post_object",
+            "instructions": "Select the general editor(s) of this issue (from dropdown list).",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "post_type": [
+                "person"
+            ],
+            "post_status": "",
+            "taxonomy": [
+                "person-type:general-editor"
+            ],
+            "return_format": "object",
+            "multiple": 1,
+            "allow_null": 0,
+            "allow_in_bindings": 0,
+            "bidirectional": 0,
+            "ui": 1,
+            "bidirectional_target": []
+        },
+        {
             "key": "field_68514e9cea8b7",
             "label": "Editors",
             "name": "editors",
             "aria-label": "",
             "type": "post_object",
-            "instructions": "Select the general editor(s) of this book (from dropdown list).",
+            "instructions": "Select\/add editor(s) who contributed to the issue.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -125,7 +154,7 @@
                 "person-type:contributor"
             ],
             "return_format": "object",
-            "multiple": 0,
+            "multiple": 1,
             "allow_null": 0,
             "allow_in_bindings": 0,
             "bidirectional": 0,
@@ -291,5 +320,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1760091300
+    "modified": 1760164423
 }
